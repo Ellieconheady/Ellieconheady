@@ -1,0 +1,80 @@
+import csv, pandas as pd
+# function to read any sales spreadsheet
+def read_sales_sheet(csv_name):
+    sales_data = []
+    with open(csv_name, 'r') as csv_file:
+        spreadsheet = csv.DictReader(csv_file)
+        for i in spreadsheet:
+            print(dict(i))  # prints entire table
+            sales_data.append(i)  # adds into row
+    return sales_data
+def sales_summary(csv_name):
+    global highest_month_sales, lowest_month_sales, highest_month_ex, lowest_month_ex
+    data = read_sales_sheet(csv_name)
+    # show a list of sales
+    sales_list = []
+    for row in data:
+        sales = int(row['sales'])
+        sales_list.append(sales)
+    print('Sales: {}'.format(sales_list))
+    # show a list of expenditures
+    expenditures_list = []
+    for row in data:
+        expenditures = int(row['expenditure'])
+        expenditures_list.append(expenditures)
+    print('Expenditure: {}'.format(expenditures_list))
+    # show sum & average of sales & expenditures
+    total_sales = sum(sales_list)
+    print('Total sales: {}'.format(total_sales))
+    total_expenditure = sum(expenditures_list)
+    print('Total expenditure: {}'.format(total_expenditure))
+    mean_sales = round(total_sales / len(sales_list), 2)
+    mean_expenditure = round(total_expenditure / len(expenditures_list), 2)
+    print('The average sale is {} and average expenditure is {}'.format(mean_sales, mean_expenditure))
+    # monthly changes
+    monthly_changes = [x - y for x, y in zip(sales_list, expenditures_list)]  # monthly changes differences
+    print('Net money in each month: {}'.format(monthly_changes))  # not the percentage yet sadly
+    # max and min sales
+    highest_sale = max(sales_list)
+    for row in data:
+        if int(row["sales"]) == highest_sale:
+            # print(row["month"])
+            highest_month_sales = row["month"]
+    print('Highest sales month is in {} with {}'.format(highest_month_sales, highest_sale))
+    lowest_sale = min(sales_list)
+    for row in data:
+        if int(row["sales"]) == lowest_sale:
+            # print(row["month"])
+            lowest_month_sales = row["month"]
+    print('Lowest sales month is in {} with {}'.format(lowest_month_sales, lowest_sale))
+    # max and min expenditures
+    highest_ex = max(expenditures_list)
+    for row in data:
+        if int(row["expenditure"]) == highest_ex:
+            # print(row["month"])
+            highest_month_ex = row["month"]
+    print('Highest expenditures month is in {} with {}'.format(highest_month_ex, highest_ex))
+    lowest_ex = min(expenditures_list)
+    for row in data:
+        if int(row["expenditure"]) == lowest_ex:
+            # print(row["month"])
+            lowest_month_ex = row["month"]
+    print('Lowest expenditures month is in {} with {}'.format(lowest_month_ex, lowest_ex))
+    # profit or loss
+    net_money = total_sales - total_expenditure
+    print('Difference: {}'.format(net_money))
+    if net_money > 0:
+        print('It\'s a profit yay! :D')
+    else:
+        print('It\'s a loss :(')
+    # create excel spreadsheet
+    sales = {'Sales': ['Total sales', 'Highest month', 'Lowest month', 'Average month'],
+             'Sales Details': [total_sales, highest_month_sales, lowest_month_sales, mean_sales],
+             'Expenditure': ['Total expenditure', 'Highest month', 'Lowest month', 'Average month'],
+             'Expenditure Details': [total_expenditure, highest_month_ex, lowest_month_ex, mean_expenditure]
+             }
+    df = pd.DataFrame(sales, columns=['Sales', 'Sales Details', 'Expenditure', 'Expenditure Details'])
+    df.to_excel("./Sales_data.xlsx", index=False)
+    print(df)
+    return
+sales_summary('sales.csv')
